@@ -12,6 +12,13 @@ function socket.connect(addr, port)
 	if fd == nil then
 		error(socket.error)
 	end
+
+	lsocket.select(nil, {fd})
+	local ok, errmsg = fd:status()
+	if not ok then
+		error(socket.error)
+	end
+
 	message = ""
 end
 
@@ -30,7 +37,10 @@ function socket.read(ti)
 	while true do
 		local ok, msg, n = pcall(string.unpack, ">s2", message)
 		if not ok then
-			local rd = lsocket.select { fd , ti }
+			local rd = lsocket.select({fd}, ti) 
+			if not rd then
+				return nil
+			end
 			if next(rd) == nil then
 				return nil
 			end
